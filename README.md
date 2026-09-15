@@ -62,6 +62,10 @@
 │   ├── residual_net_{0..4}.pt  # ансамбль остаточной сети (5 инициализаций)
 │   └── config.json             # гиперпараметры, протокол, эталонные метрики
 ├── coin_cell_pinn/             # минимальный код (без датасетов и исследовательских скриптов)
+│   ├── dataset_engine.py       # загрузка LIR2025H / IOC / SINTEF CR2032
+│   ├── best2cc.py              # инференс v5: OCV-таблица, RC-динамика, нормировка SOH
+│   └── population.py           # характеризация, сети, обучение
+├── inference.py                # пример сборки конвейера по model/config.json
 ├── smoke_test.py               # проверка пакета
 └── requirements.txt
 ```
@@ -100,8 +104,14 @@
 
 ```bash
 pip install -r requirements.txt
-python smoke_test.py
+python smoke_test.py      # веса, инференс сетей, монотонность
+python inference.py       # сборка конвейера v5 по model/config.json
 ```
+
+Конфигурация инференса (из `model/config.json`): медианная экстраполяция ёмкости,
+нормировка SOH по скорости разряда, динамика RC-звеньев с инициализацией
+поляризации, SOC-сетка с уплотнением у отсечки, ансамбль пяти остаточных сетей.
+Полный API — `coin_cell_pinn.best2cc.eval_config` (пример вызова в `inference.py`).
 
 ## Лицензии данных
 
