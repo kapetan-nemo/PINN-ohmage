@@ -1,0 +1,123 @@
+{
+  "pipeline": "v10-W5",
+  "q_estimator": "robust_median_slope_extrapolation",
+  "ocv_table": {
+    "avg_k": 3,
+    "weighting": "exponential_freshness",
+    "tau_cycles": 5.0
+  },
+  "residual_net": {
+    "hidden": 64,
+    "layers": 3,
+    "epochs": 600,
+    "lr": 0.002,
+    "optimizer": "Adam",
+    "soc_grid": [
+      0.0,
+      0.03125,
+      0.0625,
+      0.09375,
+      0.125,
+      0.15625,
+      0.1875,
+      0.21875,
+      0.25,
+      0.28125,
+      0.3125,
+      0.34375,
+      0.375,
+      0.40625,
+      0.4375,
+      0.46875,
+      0.5,
+      0.53125,
+      0.5625,
+      0.59375,
+      0.625,
+      0.65625,
+      0.6875,
+      0.71875,
+      0.75,
+      0.78125,
+      0.8125,
+      0.84375,
+      0.875,
+      0.90625,
+      0.9375,
+      0.96875,
+      1.0
+    ],
+    "n_ensemble": 5,
+    "seeds": [
+      42,
+      43,
+      44,
+      45,
+      46
+    ],
+    "extra_features": [
+      "Ah_cum/Q0",
+      "T_deviation"
+    ],
+    "loss_weighting": "SOC-slope uniform cost"
+  },
+  "aging_net": {
+    "hidden": 48,
+    "epochs": 600,
+    "lr": 0.001,
+    "n_ensemble": 2
+  },
+  "anchors": {
+    "SOC_LO": 0.45,
+    "SOC_HI": 0.85
+  },
+  "seed": 42,
+  "train_cells": [
+    "IOC_002_14B",
+    "IOC_002_02N",
+    "IOC_002_19B",
+    "IOC_002_07P",
+    "IOC_002_15B",
+    "IOC_003_04B",
+    "IOC_004_02B",
+    "IOC_008_01B",
+    "IOC_008_04N",
+    "IOC_008_05N",
+    "IOC_010_21B",
+    "IOC_010_24B",
+    "IOC_010_22B",
+    "IOC_011_29B",
+    "IOC_011_24N",
+    "IOC_011_25N",
+    "IOC_011_35B",
+    "IOC_011_21N",
+    "IOC_011_18N",
+    "IOC_011_33B",
+    "IOC_011_22N",
+    "IOC_011_39B",
+    "IOC_011_17N",
+    "IOC_011_38B",
+    "IOC_011_37B",
+    "IOC_011_19N",
+    "IOC_011_31B"
+  ],
+  "val_cells": [
+    "IOC_002_18B",
+    "IOC_008_02B",
+    "IOC_010_23B",
+    "IOC_011_27N",
+    "IOC_011_20N",
+    "IOC_011_30B",
+    "IOC_011_34B"
+  ],
+  "test_metrics": {
+    "rmse_v_mv": 13.08,
+    "rmse_v_coulomb_mv": 13.2,
+    "rmse_median_mv": 13.2,
+    "soh_mae_pp": 0.77,
+    "rmse_v_max_mv": 402.5,
+    "n_test_cells": 13,
+    "n_test_cycles": 3249
+  },
+  "protocol": "27 train / 7 val / 13 test, leave-one-battery-out, seed=42"
+}
