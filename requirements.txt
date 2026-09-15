@@ -1,3 +1,0 @@
-# dependencies: system python already has torch/numpy/scipy/pandas/yaml
-pytest>=8.0
-openpyxl>=3.1
