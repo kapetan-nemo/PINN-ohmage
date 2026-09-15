@@ -1,5 +1,5 @@
 {
-  "pipeline": "best_2_correct_charge",
+  "pipeline": "best2_cc_v5",
   "q_estimator": "robust_median_slope_extrapolation",
   "ocv_table": {
     "avg_k": 3,
@@ -112,28 +112,39 @@
     "IOC_011_34B"
   ],
   "test_metrics": {
-    "rmse_v_mv": 24.81,
-    "rmse_v_coulomb_mv": 18.06,
-    "rmse_median_mv": 26.4,
-    "soh_mae_pp": 0.62,
-    "rmse_v_max_mv": 448.5,
+    "rmse_v_mv": 23.08,
+    "rmse_median_mv": 24.4,
+    "soh_mae_pp": 0.37,
+    "soh_mae_median_pp": 0.34,
+    "rmse_cycle_median_mv": 4.6,
+    "rmse_v_max_mv": 461.4,
     "n_test_cells": 13,
     "n_test_cycles": 3246
   },
   "protocol": "27 train / 7 val / 13 test, leave-one-battery-out, seed=42",
   "data_domain": "разрядный сегмент (CC-разряд до отсечки)",
   "ablation_val": {
-    "a": {
-      "rmse_v_mv": 41.89
-    },
-    "b": {
-      "rmse_v_mv": 36.86
-    },
-    "c": {
-      "rmse_v_mv": 36.91
-    },
-    "d": {
-      "rmse_v_mv": 36.8
+    "base": 36.8,
+    "rc_dynamics": 36.51,
+    "tail_grid": 36.7,
+    "reference_ocv": 106.1,
+    "powerlaw_capacity": 43.36,
+    "rc+ratenorm+tail+bagging": 38.46
+  },
+  "val_metrics": {
+    "rmse_v_mv": 38.46,
+    "soh_mae_pp": 1.56
+  },
+  "options": {
+    "q_model": "median_slope",
+    "rate_normalized_soh": true,
+    "rc_dynamics": true,
+    "soc_grid": "tail_refined",
+    "residual_training": "tail_weighted + bagged_subsets",
+    "ocv_table": {
+      "avg_k": 3,
+      "weighting": "exponential_freshness",
+      "tau_cycles": 5.0
     }
   }
 }
