@@ -1,5 +1,5 @@
 {
-  "pipeline": "v10-W5",
+  "pipeline": "best_2_correct_charge",
   "q_estimator": "robust_median_slope_extrapolation",
   "ocv_table": {
     "avg_k": 3,
@@ -59,7 +59,8 @@
       "Ah_cum/Q0",
       "T_deviation"
     ],
-    "loss_weighting": "SOC-slope uniform cost"
+    "loss_weighting": "SOC-slope uniform cost",
+    "hist_dim": 5
   },
   "aging_net": {
     "hidden": 48,
@@ -111,13 +112,28 @@
     "IOC_011_34B"
   ],
   "test_metrics": {
-    "rmse_v_mv": 13.08,
-    "rmse_v_coulomb_mv": 13.2,
-    "rmse_median_mv": 13.2,
-    "soh_mae_pp": 0.77,
-    "rmse_v_max_mv": 402.5,
+    "rmse_v_mv": 24.81,
+    "rmse_v_coulomb_mv": 18.06,
+    "rmse_median_mv": 26.4,
+    "soh_mae_pp": 0.62,
+    "rmse_v_max_mv": 448.5,
     "n_test_cells": 13,
-    "n_test_cycles": 3249
+    "n_test_cycles": 3246
   },
-  "protocol": "27 train / 7 val / 13 test, leave-one-battery-out, seed=42"
+  "protocol": "27 train / 7 val / 13 test, leave-one-battery-out, seed=42",
+  "data_domain": "разрядный сегмент (CC-разряд до отсечки)",
+  "ablation_val": {
+    "a": {
+      "rmse_v_mv": 41.89
+    },
+    "b": {
+      "rmse_v_mv": 36.86
+    },
+    "c": {
+      "rmse_v_mv": 36.91
+    },
+    "d": {
+      "rmse_v_mv": 36.8
+    }
+  }
 }

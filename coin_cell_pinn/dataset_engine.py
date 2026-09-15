@@ -169,6 +169,51 @@ class CoinCellDataPipeline:
             meta={"phase": "discharge", "n_raw": int(len(d)), "key": key},
         )
 
+    @staticmethod
+    def _discharge_run(d_cyc: pd.DataFrame, i_thr: float = 1e-5):
+        """Длиннейший непрерывный участок разряда внутри цикла.
+
+        Разряд определяется по тренду напряжения (V падает), а не по знаку тока:
+        конвенция знака различается между форматами тестеров. Участок режется по
+        паузам (> 60 с) и по сбросам счётчика фазовой ёмкости.
+        """
+        cur = d_cyc["current_ampere"].values
+        act = np.abs(cur) > i_thr
+        runs, start = [], None
+        for j, a in enumerate(act):
+            if a and start is None:
+                start = j
+            elif not a and start is not None:
+                runs.append((start, j)); start = None
+        if start is not None:
+            runs.append((start, len(act)))
+        best = None
+        for a, b in runs:
+            if b - a < 50:
+                continue
+            seg = d_cyc.iloc[a:b].reset_index(drop=True)
+            t = seg["test_time_millisecond"].values / 1000.0
+            if t[-1] - t[0] < 60:
+                continue
+            # сбросы счётчика ёмкости → отдельные под-участки
+            cap = seg["phase_capacity_ampere_hour"].values
+            dec = np.where(np.diff(cap) < -1e-6)[0]
+            bounds = np.concatenate([[0], dec + 1, [len(seg)]])
+            for k in range(len(bounds) - 1):
+                sub = seg.iloc[bounds[k]:bounds[k + 1]].reset_index(drop=True)
+                if len(sub) < 50:
+                    continue
+                tt = sub["test_time_millisecond"].values / 1000.0
+                vv = sub["voltage_volt"].values.astype(float)
+                if tt[-1] - tt[0] < 60:
+                    continue
+                slope = float(np.polyfit(tt, vv, 1)[0])
+                if slope >= 0:      # не разряд
+                    continue
+                if best is None or len(sub) > len(best[1]):
+                    best = (k, sub)
+        return None if best is None else best[1]
+
     # ---------- IOC (CSV в .bdf: form + cycling) ----------
     def load_ioc(self, dir_path: str, cell_ids: list[str] | None = None,
                  max_points: int | None = None, i_thr: float = 1e-5
@@ -190,34 +235,10 @@ class CoinCellDataPipeline:
             if not csv.exists():
                 continue
             df = pd.read_csv(csv)
-            df = df.sort_values("test_time_millisecond")
-            disch = df[df["current_ampere"] > i_thr]
-            for cy, d_all in disch.groupby("cycle_dimensionless"):
-                d = d_all
-                if len(d) < 50:
-                    continue
-                t = d["test_time_millisecond"].values / 1000.0
-                # длиннейший непрерывный разряд (разрывы > 60 с = новый сегмент)
-                dt = np.diff(t)
-                breaks = np.where(dt > 60.0)[0]
-                starts = np.concatenate([[0], breaks + 1])
-                ends = np.concatenate([breaks + 1, [len(d)]])
-                best = int(np.argmax(ends - starts))
-                d = d.iloc[starts[best]:ends[best]].reset_index(drop=True)
-                if len(d) < 50:
-                    continue
-                t = d["test_time_millisecond"].values / 1000.0
-                i = d["current_ampere"].abs().values
-                v_raw = d["voltage_volt"].values.astype(float)
-                cap_raw = d["phase_capacity_ampere_hour"].values.astype(float)
-                # разрезка по сбросам счётчика ёмкости (склейка перезарядов
-                # внутри сегмента даёт фальшивую «глубокую разрядку»):
-                dec = np.where(np.diff(cap_raw) < -1e-6)[0]
-                starts2 = np.concatenate([[0], dec + 1])
-                ends2 = np.concatenate([dec + 1, [len(d)]])
-                best2 = int(np.argmax(ends2 - starts2))
-                d = d.iloc[starts2[best2]:ends2[best2]].reset_index(drop=True)
-                if len(d) < 50:
+            df = df.sort_values("test_time_millisecond").reset_index(drop=True)
+            for cy, d_cyc in df.groupby("cycle_dimensionless"):
+                d = self._discharge_run(d_cyc, i_thr=i_thr)
+                if d is None or len(d) < 50:
                     continue
                 t = d["test_time_millisecond"].values / 1000.0
                 i = d["current_ampere"].abs().values

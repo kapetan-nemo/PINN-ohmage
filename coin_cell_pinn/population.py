@@ -70,7 +70,7 @@ def split_population(cells_dict: dict[str, list[CellData]], seed: int = 42,
     return split
 
 
-def commission_cell(cells: list[CellData], cfg: dict, run_dir: str | None = None,
+def characterize_cell(cells: list[CellData], cfg: dict, run_dir: str | None = None,
                     early_cycles: list[int] | None = None) -> dict:
     """Ранние циклы ячейки → R0 (ECM-фит на одном цикле), Q0, V-окно."""
     from .training import set_seed, fit_ecm_cell
